@@ -1,0 +1,15 @@
+services:
+  manga-reader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3001"
+    volumes:
+      - ./data:/app/data
+      - ${LIBRARY_PATH:-./library}:/library:ro
+    environment:
+      - DATA_DIR=/app/data
+      - PORT=3001
+      - HOST=0.0.0.0
+    restart: unless-stopped

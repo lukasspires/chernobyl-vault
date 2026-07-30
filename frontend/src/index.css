@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 min-h-screen;
+}
+
+.card-hover {
+  @apply transition-transform hover:scale-[1.02] hover:shadow-lg;
+}
+
+.skeleton {
+  @apply animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded;
+}
