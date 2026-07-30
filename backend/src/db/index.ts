@@ -22,8 +22,12 @@ export function initDb() {
   db.exec(schema);
 
   const existing = db.prepare('SELECT value FROM settings WHERE key = ?').get('library_paths');
+  const envPaths = process.env.LIBRARY_PATH ? JSON.stringify([process.env.LIBRARY_PATH]) : null;
+
   if (!existing) {
-    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('library_paths', '[]');
+    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('library_paths', envPaths ?? '[]');
+  } else if (existing.value === '[]' && envPaths) {
+    db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(envPaths, 'library_paths');
   }
 
   const theme = db.prepare('SELECT value FROM settings WHERE key = ?').get('theme');
