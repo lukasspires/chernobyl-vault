@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3';
 import { COVERS_DIR } from '../config.js';
 import { getSeriesList, scanLibrary } from '../services/scanner.js';
 
-export async function libraryRoutes(app: FastifyInstance, db: Database.Database) {
+export async function libraryRoutes(app: FastifyInstance, db: Database.Database, coversDir = COVERS_DIR) {
   app.get('/api/library', async (request) => {
     const q = request.query as {
       search?: string;
@@ -21,7 +21,7 @@ export async function libraryRoutes(app: FastifyInstance, db: Database.Database)
   });
 
   app.post('/api/library/scan', async () => {
-    const result = await scanLibrary(db, COVERS_DIR);
+    const result = await scanLibrary(db, coversDir);
     return { ok: true, ...result };
   });
 }

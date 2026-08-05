@@ -1,5 +1,8 @@
 node_modules/
 dist/
+*.tsbuildinfo
+.coverage/
+coverage/
 data/
 *.db
 .env

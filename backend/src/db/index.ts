@@ -2,32 +2,54 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import { CACHE_DIR, COVERS_DIR, DATA_DIR, DB_PATH, PAGES_CACHE_DIR } from '../config.js';
+import { DATA_DIR, DB_PATH, LIBRARY_PATH } from '../config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function ensureDirs() {
-  for (const dir of [DATA_DIR, CACHE_DIR, COVERS_DIR, PAGES_CACHE_DIR]) {
+export interface InitDbOptions {
+  dataDir?: string;
+  dbPath?: string;
+  libraryPath?: string;
+}
+
+function ensureDirs(dataDir: string) {
+  for (const dir of [dataDir, path.join(dataDir, 'cache'), path.join(dataDir, 'cache', 'covers'), path.join(dataDir, 'cache', 'pages')]) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
 
-export function initDb() {
-  ensureDirs();
-  const db = new Database(DB_PATH);
+function parseLibraryPaths(value: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function initDb(options: InitDbOptions = {}) {
+  const dataDir = options.dataDir ?? DATA_DIR;
+  const dbPath = options.dbPath ?? DB_PATH;
+  const libraryPath = options.libraryPath ?? LIBRARY_PATH;
+  ensureDirs(dataDir);
+  const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
 
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
   db.exec(schema);
 
-  const existing = db.prepare('SELECT value FROM settings WHERE key = ?').get('library_paths');
-  const envPaths = process.env.LIBRARY_PATH ? JSON.stringify([process.env.LIBRARY_PATH]) : null;
+  const existing = db.prepare('SELECT value FROM settings WHERE key = ?').get('library_paths') as { value: string } | undefined;
+  const envPaths = libraryPath && fs.existsSync(libraryPath) ? [libraryPath] : [];
 
   if (!existing) {
-    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('library_paths', envPaths ?? '[]');
-  } else if (existing.value === '[]' && envPaths) {
-    db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(envPaths, 'library_paths');
+    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('library_paths', JSON.stringify(envPaths));
+  } else {
+    const storedPaths = parseLibraryPaths(existing.value);
+    const hasAccessibleStoredPath = storedPaths.some((storedPath) => fs.existsSync(storedPath));
+    if (!hasAccessibleStoredPath && envPaths.length > 0) {
+      db.prepare('UPDATE settings SET value = ? WHERE key = ?').run(JSON.stringify(envPaths), 'library_paths');
+    }
   }
 
   const theme = db.prepare('SELECT value FROM settings WHERE key = ?').get('theme');

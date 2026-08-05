@@ -35,6 +35,11 @@ export const PAGES_CACHE_DIR = path.join(DATA_DIR, 'cache', 'pages');
 export const PORT = Number(process.env.PORT ?? 3001);
 export const HOST = process.env.HOST ?? '0.0.0.0';
 export const LIBRARY_PATH = process.env.LIBRARY_PATH;
+export const NODE_ENV = process.env.NODE_ENV ?? 'development';
+export const CORS_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:3000,http://127.0.0.1:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 export const ARCHIVE_EXTENSIONS = new Set(['.cbz', '.cbr', '.pdf']);

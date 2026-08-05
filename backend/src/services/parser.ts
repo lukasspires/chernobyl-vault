@@ -10,6 +10,11 @@ import { sortNaturally } from '../utils/naturalSort.js';
 
 export type FileFormat = 'cbz' | 'cbr' | 'pdf' | 'folder';
 
+export interface ExtractedPage {
+  buffer: Buffer;
+  mimeType: string;
+}
+
 export function getFormat(filePath: string): FileFormat | null {
   if (fs.statSync(filePath).isDirectory()) return 'folder';
   const ext = path.extname(filePath).toLowerCase();
@@ -21,6 +26,18 @@ export function getFormat(filePath: string): FileFormat | null {
 
 function isImageFile(name: string): boolean {
   return IMAGE_EXTENSIONS.has(path.extname(name).toLowerCase());
+}
+
+function getImageMimeType(name: string): string {
+  switch (path.extname(name).toLowerCase()) {
+    case '.jpg':
+    case '.jpeg': return 'image/jpeg';
+    case '.png': return 'image/png';
+    case '.webp': return 'image/webp';
+    case '.gif': return 'image/gif';
+    case '.bmp': return 'image/bmp';
+    default: return 'application/octet-stream';
+  }
 }
 
 function listImagesInFolder(dir: string): string[] {
@@ -72,17 +89,17 @@ export async function getPageCount(filePath: string, format: FileFormat): Promis
   }
 }
 
-async function extractCbzPage(filePath: string, pageIndex: number): Promise<Buffer> {
+async function extractCbzPage(filePath: string, pageIndex: number): Promise<ExtractedPage> {
   const names = await listImagesInCbz(filePath);
   const entryName = names[pageIndex];
   if (!entryName) throw new Error('Page not found');
   const zip = new AdmZip(filePath);
   const entry = zip.getEntry(entryName);
   if (!entry) throw new Error('Page not found');
-  return entry.getData();
+  return { buffer: entry.getData(), mimeType: getImageMimeType(entryName) };
 }
 
-async function extractCbrPage(filePath: string, pageIndex: number): Promise<Buffer> {
+async function extractCbrPage(filePath: string, pageIndex: number): Promise<ExtractedPage> {
   const names = await listImagesInCbr(filePath);
   const target = names[pageIndex];
   if (!target) throw new Error('Page not found');
@@ -92,20 +109,20 @@ async function extractCbrPage(filePath: string, pageIndex: number): Promise<Buff
   const extracted = extractor.extract({ files: [target] });
   for (const file of extracted.files) {
     if (file.fileHeader.name === target && file.extraction) {
-      return Buffer.from(file.extraction);
+      return { buffer: Buffer.from(file.extraction), mimeType: getImageMimeType(target) };
     }
   }
   throw new Error('Page not found');
 }
 
-async function extractFolderPage(filePath: string, pageIndex: number): Promise<Buffer> {
+async function extractFolderPage(filePath: string, pageIndex: number): Promise<ExtractedPage> {
   const images = listImagesInFolder(filePath);
   const imagePath = images[pageIndex];
   if (!imagePath) throw new Error('Page not found');
-  return fs.readFileSync(imagePath);
+  return { buffer: fs.readFileSync(imagePath), mimeType: getImageMimeType(imagePath) };
 }
 
-async function extractPdfPage(filePath: string, pageIndex: number): Promise<Buffer> {
+async function extractPdfPage(filePath: string, pageIndex: number): Promise<ExtractedPage> {
   const data = new Uint8Array(fs.readFileSync(filePath));
   const doc = await pdfjs.getDocument({ data, useSystemFonts: true }).promise;
   const page = await doc.getPage(pageIndex + 1);
@@ -118,10 +135,10 @@ async function extractPdfPage(filePath: string, pageIndex: number): Promise<Buff
     viewport,
   }).promise;
 
-  return canvas.toBuffer('image/jpeg', { quality: 0.9 });
+  return { buffer: canvas.toBuffer('image/jpeg', { quality: 0.9 }), mimeType: 'image/jpeg' };
 }
 
-export async function extractPage(filePath: string, format: FileFormat, pageIndex: number): Promise<Buffer> {
+export async function extractPage(filePath: string, format: FileFormat, pageIndex: number): Promise<ExtractedPage> {
   switch (format) {
     case 'cbz':
       return extractCbzPage(filePath, pageIndex);
@@ -141,7 +158,7 @@ export async function extractCover(filePath: string, format: FileFormat): Promis
     const count = await getPageCount(filePath, format);
     if (count === 0) return null;
     const page = await extractPage(filePath, format, 0);
-    return sharp(page).resize(300, 450, { fit: 'cover' }).jpeg({ quality: 80 }).toBuffer();
+    return sharp(page.buffer).resize(300, 450, { fit: 'cover' }).jpeg({ quality: 80 }).toBuffer();
   } catch {
     return null;
   }

@@ -21,7 +21,7 @@ export function Library() {
     return p;
   }, [search, type, tag, favorite]);
 
-  const { data: series = [], isLoading } = useQuery({
+  const { data: series = [], isLoading, isError: libraryError } = useQuery({
     queryKey: ['library', params],
     queryFn: () => api.getLibrary(params),
   });
@@ -60,8 +60,17 @@ export function Library() {
       </div>
 
       {scanMutation.isSuccess ? (
-        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 text-sm">
-          Scan concluído: {scanMutation.data.seriesAdded} séries e {scanMutation.data.chaptersAdded} capítulos adicionados.
+        <div className={`p-3 rounded-lg text-sm ${scanMutation.data.filesFailed || scanMutation.data.missingPaths ? 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300' : 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300'}`}>
+          Scan concluído: {scanMutation.data.seriesAdded} séries e {scanMutation.data.chaptersAdded} capítulos adicionados,{' '}
+          {scanMutation.data.chaptersUpdated} atualizados e {scanMutation.data.chaptersRemoved} removidos.
+          {scanMutation.data.filesFailed > 0 ? ` ${scanMutation.data.filesFailed} arquivo(s) falharam.` : ''}
+          {scanMutation.data.missingPaths > 0 ? ` ${scanMutation.data.missingPaths} caminho(s) estão indisponíveis.` : ''}
+        </div>
+      ) : null}
+
+      {scanMutation.isError ? (
+        <div role="alert" className="p-3 rounded-lg bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 text-sm">
+          {scanMutation.error instanceof Error ? scanMutation.error.message : 'Não foi possível escanear a biblioteca.'}
         </div>
       ) : null}
 
@@ -93,7 +102,9 @@ export function Library() {
         </label>
       </div>
 
-      {isLoading ? (
+      {libraryError ? (
+        <div role="alert" className="text-center py-16 text-red-600">Não foi possível carregar a biblioteca.</div>
+      ) : isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 10 }).map((_, i) => <ComicCardSkeleton key={i} />)}
         </div>

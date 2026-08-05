@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3';
 import { COVERS_DIR } from '../config.js';
 import { applyMetadata, searchComicVine, searchMal } from '../services/metadata.js';
 
-export async function metadataRoutes(app: FastifyInstance, db: Database.Database) {
+export async function metadataRoutes(app: FastifyInstance, db: Database.Database, coversDir = COVERS_DIR) {
   app.get('/api/metadata/search', async (request, reply) => {
     const q = request.query as { q?: string; source?: string };
     if (!q.q?.trim()) return reply.status(400).send({ error: 'q obrigatório' });
@@ -29,7 +29,7 @@ export async function metadataRoutes(app: FastifyInstance, db: Database.Database
     }
 
     try {
-      await applyMetadata(db, Number(id), source, externalId, COVERS_DIR);
+      await applyMetadata(db, Number(id), source, externalId, coversDir);
       return { ok: true };
     } catch (err) {
       return reply.status(400).send({ error: err instanceof Error ? err.message : 'Erro ao aplicar metadados' });

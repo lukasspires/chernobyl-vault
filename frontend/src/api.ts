@@ -61,12 +61,23 @@ export interface MetadataResult {
   imageUrl: string | null;
 }
 
+export interface ScanResult {
+  ok: boolean;
+  seriesAdded: number;
+  chaptersAdded: number;
+  chaptersUpdated: number;
+  chaptersRemoved: number;
+  seriesRemoved: number;
+  filesFailed: number;
+  missingPaths: number;
+}
+
 export const api = {
   getLibrary: (params: Record<string, string>) => {
     const qs = new URLSearchParams(params).toString();
     return request<Series[]>(`/library${qs ? `?${qs}` : ''}`);
   },
-  scanLibrary: () => request<{ ok: boolean; seriesAdded: number; chaptersAdded: number }>('/library/scan', { method: 'POST' }),
+  scanLibrary: () => request<ScanResult>('/library/scan', { method: 'POST' }),
   getSeries: (id: number) => request<SeriesDetail>(`/series/${id}`),
   toggleFavorite: (id: number) => request<{ favorite: boolean }>(`/series/${id}/favorite`, { method: 'POST' }),
   addTag: (id: number, tagName: string) => request(`/series/${id}/tags`, { method: 'POST', body: JSON.stringify({ tagName }) }),

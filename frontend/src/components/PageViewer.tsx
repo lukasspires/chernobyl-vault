@@ -15,6 +15,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
   const [page, setPage] = useState(initialPage);
   const [zoom, setZoom] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
+  const [pageError, setPageError] = useState(false);
   const fitMode = useAppStore((s) => s.fitMode);
   const setFitMode = useAppStore((s) => s.setFitMode);
   const readingDirection = useAppStore((s) => s.readingDirection);
@@ -22,10 +23,13 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
   const touchStart = useRef<number | null>(null);
 
   const goTo = useCallback((next: number) => {
+    if (pageCount <= 0) return;
     const clamped = Math.max(0, Math.min(pageCount - 1, next));
+    if (clamped === page) return;
     setPage(clamped);
+    setPageError(false);
     onPageChange?.(clamped);
-  }, [pageCount, onPageChange]);
+  }, [page, pageCount, onPageChange]);
 
   const prev = useCallback(() => goTo(readingDirection === 'rtl' ? page + 1 : page - 1), [goTo, readingDirection, page]);
   const next = useCallback(() => goTo(readingDirection === 'rtl' ? page - 1 : page + 1), [goTo, readingDirection, page]);
@@ -77,9 +81,9 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
               {mode === 'fit-width' ? 'Largura' : mode === 'fit-height' ? 'Altura' : 'Original'}
             </button>
           ))}
-          <button type="button" onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}><ZoomOut className="w-4 h-4" /></button>
-          <button type="button" onClick={() => setZoom((z) => Math.min(3, z + 0.25))}><ZoomIn className="w-4 h-4" /></button>
-          <button type="button" onClick={toggleFullscreen}>
+          <button type="button" aria-label="Diminuir zoom" onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}><ZoomOut className="w-4 h-4" /></button>
+          <button type="button" aria-label="Aumentar zoom" onClick={() => setZoom((z) => Math.min(3, z + 0.25))}><ZoomIn className="w-4 h-4" /></button>
+          <button type="button" aria-label="Alternar tela cheia" onClick={toggleFullscreen}>
             {fullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
           </button>
         </div>
@@ -100,17 +104,27 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
           touchStart.current = null;
         }}
       >
-        <img
-          src={api.pageUrl(chapterId, page)}
-          alt={`Página ${page + 1}`}
-          className={`${fitClass(fitMode)} transition-transform`}
-          style={{ transform: fitMode === 'original' ? `scale(${zoom})` : undefined }}
-          draggable={false}
-        />
-        <button type="button" className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white" onClick={(e) => { e.stopPropagation(); prev(); }}>
+        {pageError ? (
+          <div role="alert" className="text-center text-white">
+            <p>Não foi possível carregar esta página.</p>
+            <button type="button" onClick={(event) => { event.stopPropagation(); setPageError(false); }} className="mt-3 rounded bg-violet-600 px-4 py-2">
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <img
+            src={api.pageUrl(chapterId, page)}
+            alt={`Página ${page + 1}`}
+            className={`${fitClass(fitMode)} transition-transform`}
+            style={{ transform: fitMode === 'original' ? `scale(${zoom})` : undefined }}
+            draggable={false}
+            onError={() => setPageError(true)}
+          />
+        )}
+        <button type="button" aria-label="Página à esquerda" className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white" onClick={(e) => { e.stopPropagation(); prev(); }}>
           <ChevronLeft className="w-8 h-8" />
         </button>
-        <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white" onClick={(e) => { e.stopPropagation(); next(); }}>
+        <button type="button" aria-label="Página à direita" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white" onClick={(e) => { e.stopPropagation(); next(); }}>
           <ChevronRight className="w-8 h-8" />
         </button>
       </div>

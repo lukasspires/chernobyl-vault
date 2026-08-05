@@ -1,6 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type Database from 'better-sqlite3';
+import sharp from 'sharp';
+
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_COVER_BYTES = 10 * 1024 * 1024;
+
+async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<Response> {
+  try {
+    return await fetch(input, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      throw new Error('Tempo limite excedido ao acessar serviço externo');
+    }
+    throw error;
+  }
+}
 
 export interface MalSearchResult {
   id: number;
@@ -35,7 +50,7 @@ export async function searchMal(db: Database.Database, query: string): Promise<M
   url.searchParams.set('limit', '10');
   url.searchParams.set('fields', 'synopsis,main_picture');
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithTimeout(url.toString(), {
     headers: { 'X-MAL-CLIENT-ID': clientId },
   });
 
@@ -77,7 +92,7 @@ export async function searchComicVine(db: Database.Database, query: string): Pro
   url.searchParams.set('field_list', 'id,name,description,image,publisher,start_year');
   url.searchParams.set('limit', '10');
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithTimeout(url.toString(), {
     headers: { 'User-Agent': 'MangaReader/1.0' },
   });
 
@@ -118,7 +133,7 @@ export async function applyMetadata(
     if (!clientId) throw new Error('mal_client_id não configurado');
 
     const url = `https://api.myanimelist.net/v2/anime/${externalId}?fields=synopsis,main_picture`;
-    const res = await fetch(url, { headers: { 'X-MAL-CLIENT-ID': clientId } });
+    const res = await fetchWithTimeout(url, { headers: { 'X-MAL-CLIENT-ID': clientId } });
     if (!res.ok) throw new Error('Falha ao buscar detalhes MAL');
 
     const node = await res.json() as {
@@ -146,7 +161,7 @@ export async function applyMetadata(
     url.searchParams.set('format', 'json');
     url.searchParams.set('field_list', 'name,description,image,publisher,start_year');
 
-    const res = await fetch(url.toString(), { headers: { 'User-Agent': 'MangaReader/1.0' } });
+    const res = await fetchWithTimeout(url.toString(), { headers: { 'User-Agent': 'MangaReader/1.0' } });
     if (!res.ok) throw new Error('Falha ao buscar detalhes ComicVine');
 
     const data = await res.json() as {
@@ -181,10 +196,16 @@ export async function applyMetadata(
 
 async function downloadCover(url: string, coversDir: string, seriesId: number): Promise<string> {
   fs.mkdirSync(coversDir, { recursive: true });
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error('Falha ao baixar capa');
+  const contentType = res.headers.get('content-type')?.split(';')[0].trim() ?? '';
+  if (!contentType.startsWith('image/')) throw new Error('A capa remota não é uma imagem válida');
+  const declaredSize = Number(res.headers.get('content-length') ?? 0);
+  if (declaredSize > MAX_COVER_BYTES) throw new Error('A capa remota excede o limite de 10 MB');
   const buffer = Buffer.from(await res.arrayBuffer());
+  if (buffer.length > MAX_COVER_BYTES) throw new Error('A capa remota excede o limite de 10 MB');
+  const jpeg = await sharp(buffer).jpeg({ quality: 85 }).toBuffer();
   const coverPath = path.join(coversDir, `${seriesId}.jpg`);
-  fs.writeFileSync(coverPath, buffer);
+  fs.writeFileSync(coverPath, jpeg);
   return coverPath;
 }

@@ -6,10 +6,14 @@ import { ARCHIVE_EXTENSIONS, IMAGE_EXTENSIONS } from '../config.js';
 import { sortNaturally } from '../utils/naturalSort.js';
 import { extractCover, getFormat, getPageCount, type FileFormat } from './parser.js';
 
-interface ScanResult {
+export interface ScanResult {
   seriesAdded: number;
   chaptersAdded: number;
   chaptersUpdated: number;
+  chaptersRemoved: number;
+  seriesRemoved: number;
+  filesFailed: number;
+  missingPaths: number;
 }
 
 interface ChapterCandidate {
@@ -150,23 +154,41 @@ export async function scanLibrary(db: Database.Database, coversDir: string): Pro
   let seriesAdded = 0;
   let chaptersAdded = 0;
   let chaptersUpdated = 0;
+  let chaptersRemoved = 0;
+  let seriesRemoved = 0;
+  let filesFailed = 0;
+  let missingPaths = 0;
 
   const findSeries = db.prepare('SELECT id FROM series WHERE title = ?');
   const insertSeries = db.prepare('INSERT INTO series (title, type) VALUES (?, ?)');
   const updateCover = db.prepare('UPDATE series SET cover_path = ? WHERE id = ?');
-  const findChapter = db.prepare('SELECT id, page_count FROM chapters WHERE file_path = ?');
+  const findChapter = db.prepare('SELECT id, series_id, title, format, page_count, sort_order FROM chapters WHERE file_path = ?');
   const insertChapter = db.prepare(`
     INSERT INTO chapters (series_id, title, file_path, format, page_count, sort_order)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
   const updateChapter = db.prepare(`
-    UPDATE chapters SET title = ?, format = ?, page_count = ?, sort_order = ? WHERE id = ?
+    UPDATE chapters SET series_id = ?, title = ?, format = ?, page_count = ?, sort_order = ? WHERE id = ?
   `);
 
   const seenPaths = new Set<string>();
+  const accessibleRoots: string[] = [];
 
   for (const rootPath of paths) {
-    const seriesMap = await collectFromRoot(rootPath);
+    if (!fs.existsSync(rootPath) || !fs.statSync(rootPath).isDirectory()) {
+      missingPaths++;
+      continue;
+    }
+    accessibleRoots.push(path.resolve(rootPath) + path.sep);
+
+    let seriesMap: Map<string, ChapterCandidate[]>;
+    try {
+      seriesMap = await collectFromRoot(rootPath);
+    } catch (error) {
+      missingPaths++;
+      console.warn(`Failed to scan library root ${path.basename(rootPath)}:`, error instanceof Error ? error.message : 'Unknown error');
+      continue;
+    }
 
     for (const [seriesTitle, chapters] of seriesMap) {
       let seriesRow = findSeries.get(seriesTitle) as { id: number } | undefined;
@@ -182,12 +204,31 @@ export async function scanLibrary(db: Database.Database, coversDir: string): Pro
 
       for (const chapter of chapters) {
         seenPaths.add(chapter.filePath);
-        const pageCount = await getPageCount(chapter.filePath, chapter.format);
-        const existing = findChapter.get(chapter.filePath) as { id: number; page_count: number } | undefined;
+        let pageCount: number;
+        try {
+          pageCount = await getPageCount(chapter.filePath, chapter.format);
+        } catch (error) {
+          filesFailed++;
+          console.warn(`Failed to inspect chapter ${path.basename(chapter.filePath)}:`, error instanceof Error ? error.message : 'Unknown error');
+          continue;
+        }
+        const existing = findChapter.get(chapter.filePath) as {
+          id: number;
+          series_id: number;
+          title: string;
+          format: string;
+          page_count: number;
+          sort_order: number;
+        } | undefined;
 
         if (existing) {
-          if (existing.page_count !== pageCount) {
-            updateChapter.run(chapter.title, chapter.format, pageCount, order, existing.id);
+          const changed = existing.series_id !== seriesId
+            || existing.title !== chapter.title
+            || existing.format !== chapter.format
+            || existing.page_count !== pageCount
+            || existing.sort_order !== order;
+          if (changed) {
+            updateChapter.run(seriesId, chapter.title, chapter.format, pageCount, order, existing.id);
             chaptersUpdated++;
           }
         } else {
@@ -214,12 +255,39 @@ export async function scanLibrary(db: Database.Database, coversDir: string): Pro
   // Remove chapters whose files no longer exist
   const allChapters = db.prepare('SELECT id, file_path FROM chapters').all() as { id: number; file_path: string }[];
   for (const ch of allChapters) {
-    if (!seenPaths.has(ch.file_path) && !fs.existsSync(ch.file_path)) {
+    const resolvedChapterPath = path.resolve(ch.file_path);
+    const belongsToScannedRoot = accessibleRoots.some((root) => resolvedChapterPath.startsWith(root));
+    if (!seenPaths.has(ch.file_path) && (belongsToScannedRoot || !fs.existsSync(ch.file_path))) {
       db.prepare('DELETE FROM chapters WHERE id = ?').run(ch.id);
+      chaptersRemoved++;
     }
   }
 
-  return { seriesAdded, chaptersAdded, chaptersUpdated };
+  const emptySeries = db.prepare(`
+    SELECT id, cover_path FROM series s
+    WHERE NOT EXISTS (SELECT 1 FROM chapters c WHERE c.series_id = s.id)
+  `).all() as { id: number; cover_path: string | null }[];
+  const resolvedCoversDir = path.resolve(coversDir) + path.sep;
+  for (const series of emptySeries) {
+    db.prepare('DELETE FROM series WHERE id = ?').run(series.id);
+    seriesRemoved++;
+    if (series.cover_path) {
+      const resolvedCover = path.resolve(series.cover_path);
+      if (resolvedCover.startsWith(resolvedCoversDir) && fs.existsSync(resolvedCover)) {
+        fs.unlinkSync(resolvedCover);
+      }
+    }
+  }
+
+  return {
+    seriesAdded,
+    chaptersAdded,
+    chaptersUpdated,
+    chaptersRemoved,
+    seriesRemoved,
+    filesFailed,
+    missingPaths,
+  };
 }
 
 export function getSeriesList(db: Database.Database, filters: {
