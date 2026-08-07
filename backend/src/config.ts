@@ -32,6 +32,7 @@ export const DB_PATH = path.join(DATA_DIR, 'manga-reader.db');
 export const CACHE_DIR = path.join(DATA_DIR, 'cache');
 export const COVERS_DIR = path.join(DATA_DIR, 'cache', 'covers');
 export const PAGES_CACHE_DIR = path.join(DATA_DIR, 'cache', 'pages');
+export const DOWNLOADS_DIR = path.join(DATA_DIR, 'downloads');
 export const PORT = Number(process.env.PORT ?? 3001);
 export const HOST = process.env.HOST ?? '0.0.0.0';
 export const LIBRARY_PATH = process.env.LIBRARY_PATH;
@@ -42,4 +43,4 @@ export const CORS_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:3000,h
   .filter(Boolean);
 
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
-export const ARCHIVE_EXTENSIONS = new Set(['.cbz', '.cbr', '.pdf']);
+export const ARCHIVE_EXTENSIONS = new Set(['.cbz', '.zip', '.cbr', '.rar', '.pdf']);

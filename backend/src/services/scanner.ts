@@ -52,7 +52,7 @@ async function collectFromRoot(rootPath: string): Promise<Map<string, ChapterCan
 
   if (!fs.existsSync(rootPath)) return seriesMap;
 
-  const archiveFiles = await fg(['**/*.{cbz,cbr,pdf}'], {
+  const archiveFiles = await fg(['**/*.{cbz,zip,cbr,rar,pdf}'], {
     cwd: rootPath,
     absolute: true,
     onlyFiles: true,

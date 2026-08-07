@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3';
 
 const ALLOWED_KEYS = new Set(['library_paths', 'theme', 'reading_direction', 'mal_client_id', 'comicvine_api_key']);
 const THEMES = new Set(['system', 'light', 'dark']);
-const READING_DIRECTIONS = new Set(['ltr', 'rtl']);
+const READING_DIRECTIONS = new Set(['ltr', 'rtl', 'vertical']);
 
 function validateSetting(key: string, value: unknown): string | null {
   if (key === 'library_paths') {

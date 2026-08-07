@@ -1,9 +1,13 @@
 const BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = new Headers(options?.headers);
+  if (options?.body != null && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
+    headers,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
@@ -72,6 +76,55 @@ export interface ScanResult {
   missingPaths: number;
 }
 
+export type ScraperSource = 'mangadex' | 'html';
+
+export interface RemoteManga {
+  source: ScraperSource;
+  sourceId: string;
+  sourceUrl: string;
+  title: string;
+  description: string;
+  altTitles: string[];
+  authors: string[];
+  artists: string[];
+  tags: string[];
+  year: number | null;
+  status: string | null;
+  demographic: string | null;
+  contentRating: string | null;
+  originalLanguage: string | null;
+  availableLanguages: string[];
+  coverUrl: string | null;
+  thumbnailUrl: string | null;
+}
+
+export interface RemoteChapter {
+  source: ScraperSource;
+  sourceId: string;
+  title: string;
+  url: string;
+  language: string | null;
+  group: string | null;
+  number: number | null;
+}
+
+export interface DownloadJob {
+  id: string;
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+  manga: Pick<RemoteManga, 'source' | 'sourceId' | 'title' | 'coverUrl'>;
+  chapterCount: number;
+  completedChapters: number;
+  failedChapters: number;
+  currentChapter: string | null;
+  currentPage: number;
+  totalPages: number;
+  downloadedPages: number;
+  skippedPages: number;
+  errors: { chapter: string; error: string }[];
+  createdAt: string;
+  finishedAt: string | null;
+}
+
 export const api = {
   getLibrary: (params: Record<string, string>) => {
     const qs = new URLSearchParams(params).toString();
@@ -98,4 +151,16 @@ export const api = {
     request<MetadataResult[]>(`/metadata/search?q=${encodeURIComponent(q)}&source=${source}`),
   applyMetadata: (seriesId: number, source: 'mal' | 'comicvine', externalId: number) =>
     request(`/series/${seriesId}/metadata`, { method: 'POST', body: JSON.stringify({ source, externalId }) }),
+  searchRemoteManga: (params: Record<string, string>) => {
+    const qs = new URLSearchParams(params).toString();
+    return request<{ items: RemoteManga[]; total: number }>(`/scraper/search${qs ? `?${qs}` : ''}`);
+  },
+  getRemoteTags: () => request<{ id: string; name: string }[]>('/scraper/tags'),
+  getRemoteChapters: (sourceId: string, languages: string[], page: number, limit = 50) =>
+    request<{ chapters: RemoteChapter[]; total: number }>(`/scraper/manga/${sourceId}/chapters?${new URLSearchParams({ languages: languages.join(','), page: String(page), limit: String(limit) })}`),
+  analyzeRemoteUrl: (url: string) => request<{ manga: RemoteManga; chapters: RemoteChapter[] }>('/scraper/analyze', { method: 'POST', body: JSON.stringify({ url }) }),
+  startDownload: (manga: RemoteManga, chapters: RemoteChapter[], dataSaver: boolean) =>
+    request<DownloadJob>('/scraper/downloads', { method: 'POST', body: JSON.stringify({ manga, chapters, dataSaver }) }),
+  getDownloads: () => request<DownloadJob[]>('/scraper/downloads'),
+  cancelDownload: (id: string) => request<DownloadJob>(`/scraper/downloads/${id}`, { method: 'DELETE' }),
 };

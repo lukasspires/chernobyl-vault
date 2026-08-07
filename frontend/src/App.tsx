@@ -6,6 +6,7 @@ import { Library } from './pages/Library';
 import { Reader } from './pages/Reader';
 import { SeriesPage } from './pages/Series';
 import { SettingsPage } from './pages/Settings';
+import { ExplorePage } from './pages/Explore';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -20,6 +21,7 @@ export function App() {
             <Route index element={<Library />} />
             <Route path="series/:id" element={<SeriesPage />} />
             <Route path="history" element={<HistoryPage />} />
+            <Route path="explore" element={<ExplorePage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           <Route path="read/:chapterId" element={<Reader />} />
