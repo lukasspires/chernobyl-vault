@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type FitMode = 'fit-width' | 'fit-height' | 'original';
-export type ReadingDirection = 'ltr' | 'rtl';
+export type ReadingDirection = 'ltr' | 'rtl' | 'vertical';
 
 interface AppState {
   theme: Theme;

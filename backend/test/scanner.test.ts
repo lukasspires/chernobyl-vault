@@ -2,11 +2,33 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import AdmZip from 'adm-zip';
 import { initDb } from '../src/db/index.js';
 import { scanLibrary } from '../src/services/scanner.js';
 import { createTestDatabase } from './helpers.js';
 
 const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+
+test('scanner recognizes regular ZIP comic archives', async (t) => {
+  const fixture = createTestDatabase();
+  t.after(fixture.cleanup);
+  const library = path.join(fixture.dataDir, 'library');
+  const series = path.join(library, 'New Series');
+  fs.mkdirSync(series, { recursive: true });
+  const archive = new AdmZip();
+  archive.addFile('001.png', PNG_1X1);
+  archive.writeZip(path.join(series, 'Chapter 1.zip'));
+  fixture.db.prepare("UPDATE settings SET value = ? WHERE key = 'library_paths'").run(JSON.stringify([library]));
+
+  const result = await scanLibrary(fixture.db, path.join(fixture.dataDir, 'covers'));
+
+  assert.equal(result.seriesAdded, 1);
+  assert.equal(result.chaptersAdded, 1);
+  assert.deepEqual(
+    fixture.db.prepare('SELECT title, format, page_count FROM chapters').get(),
+    { title: 'Chapter 1', format: 'cbz', page_count: 1 },
+  );
+});
 
 test('scanner continues after a corrupt archive and removes a vanished folder chapter', async (t) => {
   const fixture = createTestDatabase();

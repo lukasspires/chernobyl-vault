@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { BookOpen, Clock, Library, Settings } from 'lucide-react';
+import { BookOpen, Clock, Compass, Library, Settings } from 'lucide-react';
 import { applyTheme, useAppStore } from '../store';
 
 const nav = [
   { to: '/', label: 'Biblioteca', icon: Library },
+  { to: '/explore', label: 'Explorar', icon: Compass },
   { to: '/history', label: 'Histórico', icon: Clock },
   { to: '/settings', label: 'Configurações', icon: Settings },
 ];

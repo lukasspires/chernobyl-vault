@@ -29,4 +29,9 @@ test('health, validation, progress history and page MIME work through the API', 
   assert.equal(page.statusCode, 200);
   assert.match(page.headers['content-type'] ?? '', /^image\/png/);
   assert.equal((await app.inject({ method: 'PUT', url: '/api/settings', payload: { theme: 'neon' } })).statusCode, 400);
+  assert.equal((await app.inject({ method: 'PUT', url: '/api/settings', payload: { reading_direction: 'vertical' } })).statusCode, 200);
+  assert.equal(
+    (fixture.db.prepare("SELECT value FROM settings WHERE key = 'reading_direction'").get() as { value: string }).value,
+    'vertical',
+  );
 });

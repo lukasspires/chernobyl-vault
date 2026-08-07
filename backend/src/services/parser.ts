@@ -18,8 +18,8 @@ export interface ExtractedPage {
 export function getFormat(filePath: string): FileFormat | null {
   if (fs.statSync(filePath).isDirectory()) return 'folder';
   const ext = path.extname(filePath).toLowerCase();
-  if (ext === '.cbz') return 'cbz';
-  if (ext === '.cbr') return 'cbr';
+  if (ext === '.cbz' || ext === '.zip') return 'cbz';
+  if (ext === '.cbr' || ext === '.rar') return 'cbr';
   if (ext === '.pdf') return 'pdf';
   return null;
 }

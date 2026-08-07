@@ -9,6 +9,9 @@ Aplicação web privada para leitura de quadrinhos e mangás. Escaneia pastas lo
 - Progresso de leitura e histórico
 - Favoritos, tags e busca
 - Metadados via MyAnimeList e ComicVine (opcional)
+- Catálogo MangaDex com filtros, seleção de idiomas e download de capítulos
+- Importação por URL de leitores HTML/WordPress/Madara compatíveis
+- Downloads retomáveis, modo de economia de dados e importação automática na biblioteca
 - Modo escuro e direção de leitura LTR/RTL
 
 ## Privacidade
@@ -64,6 +67,10 @@ Acesse http://localhost:3000
 1. Abra **Configurações** e adicione os caminhos da biblioteca
 2. Na **Biblioteca**, clique em **Reescanear**
 3. Clique em uma série para ver capítulos e começar a ler
+
+Para obter capítulos remotos, abra **Explorar**, pesquise no catálogo ou cole a URL de um leitor HTML compatível. Os arquivos são gravados em `data/downloads` e aparecem automaticamente na biblioteca ao final de cada capítulo.
+
+Use somente conteúdo que você tem autorização para baixar. O aplicativo não contorna login, CAPTCHA, paywall ou DRM.
 
 ## Estrutura de pastas recomendada
 

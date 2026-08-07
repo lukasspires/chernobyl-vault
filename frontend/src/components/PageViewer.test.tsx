@@ -26,4 +26,14 @@ describe('PageViewer navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Página à esquerda' }));
     expect(onPageChange).toHaveBeenLastCalledWith(1);
   });
+
+  it('renders every page for continuous vertical reading', () => {
+    useAppStore.setState({ readingDirection: 'vertical' });
+    render(<PageViewer chapterId={1} pageCount={3} />);
+
+    expect(screen.getAllByRole('img')).toHaveLength(3);
+    expect(screen.getByRole('img', { name: 'Página 3' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Página à esquerda' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Página à direita' })).not.toBeInTheDocument();
+  });
 });

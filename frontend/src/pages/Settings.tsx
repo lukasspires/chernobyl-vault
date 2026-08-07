@@ -104,6 +104,7 @@ export function SettingsPage() {
             <select value={readingDirection} onChange={(e) => setReadingDirection(e.target.value as ReadingDirection)} className="mt-1 w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
               <option value="ltr">Esquerda → Direita</option>
               <option value="rtl">Direita → Esquerda (mangá)</option>
+              <option value="vertical">Vertical (rolagem contínua)</option>
             </select>
           </label>
         </div>
