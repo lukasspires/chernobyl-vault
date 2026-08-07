@@ -1,10 +1,10 @@
 ---
 name: react-feature
-description: Implement complete Manga Reader React features using its routing, TanStack Query, Zustand, reader interactions, accessibility, and Vitest conventions.
+description: Implement complete Chernobyl Vault React features using its routing, TanStack Query, Zustand, reader interactions, accessibility, and Vitest conventions.
 argument-hint: "[feature or user story]"
 ---
 
-# Manga Reader React feature
+# Chernobyl Vault React feature
 
 1. Inspect the related route, components, API types, query/mutation flow, store, CSS, and tests.
 2. Define user behavior, server contract, navigation, and all visual states.

@@ -1,4 +1,4 @@
-# Repository instructions for Manga Reader
+# Repository instructions for Chernobyl Vault
 
 ## Communication
 

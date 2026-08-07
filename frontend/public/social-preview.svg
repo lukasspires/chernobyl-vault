@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(272 320) rotate(90) scale(300)">
+      <stop stop-color="#f59e0b" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="640" fill="#09090b"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+  <g transform="translate(120 168) scale(4.75)">
+    <circle cx="32" cy="32" r="29" fill="#18181b" stroke="#f59e0b" stroke-width="3"/>
+    <circle cx="32" cy="32" r="22" fill="#09090b" stroke="#52525b" stroke-width="2"/>
+    <path d="M30 12h4l3.7 14.2-5.7 3.3-5.7-3.3L30 12Z" fill="#f59e0b"/>
+    <path d="m49.3 42-2 3.5-14.1-4-0.1-6.6 5.7-3.3L49.3 42Z" fill="#f59e0b"/>
+    <path d="m14.7 42 10.5-10.4 5.7 3.3-0.1 6.6-14.1 4-2-3.5Z" fill="#f59e0b"/>
+    <circle cx="32" cy="32" r="5.5" fill="#27272a" stroke="#fbbf24" stroke-width="2"/>
+  </g>
+  <text x="540" y="290" fill="#fafafa" font-family="Arial, sans-serif" font-size="76" font-weight="700">Chernobyl Vault</text>
+  <text x="544" y="355" fill="#fbbf24" font-family="Arial, sans-serif" font-size="27" letter-spacing="6">STORIES FROM THE EXCLUSION ZONE</text>
+  <text x="544" y="420" fill="#a1a1aa" font-family="Arial, sans-serif" font-size="24">Biblioteca self-hosted para mangás, webtoons e quadrinhos.</text>
+</svg>

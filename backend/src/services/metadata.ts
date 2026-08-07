@@ -93,7 +93,7 @@ export async function searchComicVine(db: Database.Database, query: string): Pro
   url.searchParams.set('limit', '10');
 
   const res = await fetchWithTimeout(url.toString(), {
-    headers: { 'User-Agent': 'MangaReader/1.0' },
+    headers: { 'User-Agent': 'ChernobylVault/1.0' },
   });
 
   if (!res.ok) {
@@ -161,7 +161,7 @@ export async function applyMetadata(
     url.searchParams.set('format', 'json');
     url.searchParams.set('field_list', 'name,description,image,publisher,start_year');
 
-    const res = await fetchWithTimeout(url.toString(), { headers: { 'User-Agent': 'MangaReader/1.0' } });
+    const res = await fetchWithTimeout(url.toString(), { headers: { 'User-Agent': 'ChernobylVault/1.0' } });
     if (!res.ok) throw new Error('Falha ao buscar detalhes ComicVine');
 
     const data = await res.json() as {

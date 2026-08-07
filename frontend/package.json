@@ -1,5 +1,5 @@
 {
-  "name": "manga-reader-frontend",
+  "name": "chernobyl-vault-frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.19.0"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.66.9",

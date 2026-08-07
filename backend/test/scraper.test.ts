@@ -101,6 +101,23 @@ test('generic reader analysis rejects loopback addresses before fetching', async
   assert.equal(fetched, false);
 });
 
+test('generic reader pins the validated public address in its dispatcher', async () => {
+  let resolutions = 0;
+  let receivedDispatcher = false;
+  const service = new MangaScraperService({
+    resolveHostname: async () => { resolutions++; return ['93.184.216.34']; },
+    fetchImpl: (async (_input: RequestInfo | URL, init?: RequestInit & { dispatcher?: unknown }) => {
+      receivedDispatcher = init?.dispatcher !== undefined;
+      return new Response('<html><head><title>Example Manga</title></head></html>', { headers: { 'content-type': 'text/html' } });
+    }) as typeof fetch,
+  });
+
+  await service.analyzeUrl('https://example.com/manga');
+
+  assert.equal(resolutions, 1);
+  assert.equal(receivedDispatcher, true);
+});
+
 test('generic HTML readers expose chapters and download lazy-loaded images', async (t) => {
   const fixture = createTestDatabase();
   t.after(fixture.cleanup);

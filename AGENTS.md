@@ -1,6 +1,6 @@
 # Agent operating guide
 
-This file gives repository-level operational context to AI coding agents working on Manga Reader.
+This file gives repository-level operational context to AI coding agents working on Chernobyl Vault.
 
 ## First actions
 
@@ -55,7 +55,7 @@ Run commands from the indicated directory.
 ### Repository root
 
 - Validate Compose: `docker compose config --quiet`
-- Build container: `docker build -t manga-reader:local .`
+- Build container: `docker build -t chernobyl-vault:local .`
 - Run application: `docker compose up -d --build`
 
 The CI workflow runs both test suites, both builds, verifies `backend/dist/db/schema.sql`, and builds the container.

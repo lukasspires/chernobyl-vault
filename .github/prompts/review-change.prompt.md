@@ -1,6 +1,6 @@
 ---
 name: review-change
-description: Review a Manga Reader change for correctness, security, data safety, compatibility, and missing tests.
+description: Review a Chernobyl Vault change for correctness, security, data safety, compatibility, and missing tests.
 agent: code-review
 ---
 

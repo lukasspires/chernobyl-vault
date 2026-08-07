@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Relatar vulnerabilidade
+    url: https://github.com/lukasspires/chernobyl-vault/security/advisories/new
+    about: Use o relatório privado para questões de segurança.

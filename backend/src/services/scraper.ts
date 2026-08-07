@@ -1,12 +1,14 @@
 import dns from 'node:dns/promises';
+import type { LookupAddress } from 'node:dns';
 import fs from 'node:fs';
-import net from 'node:net';
+import net, { type LookupFunction } from 'node:net';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import { Agent, fetch as undiciFetch, type Dispatcher } from 'undici';
 
 const MANGADEX_API = 'https://api.mangadex.org';
 const MANGADEX_COVERS = 'https://uploads.mangadex.org/covers';
-const USER_AGENT = 'MangaReader/1.0 (personal-use downloader)';
+const USER_AGENT = 'ChernobylVault/1.0 (personal-use downloader)';
 const MAX_JSON_BYTES = 5 * 1024 * 1024;
 const MAX_HTML_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 40 * 1024 * 1024;
@@ -89,7 +91,8 @@ export interface ScraperService {
   downloadCover(url: string, signal?: AbortSignal): Promise<Buffer>;
 }
 
-type FetchLike = typeof fetch;
+type FetchOptions = RequestInit & { dispatcher?: Dispatcher };
+type FetchLike = (input: string | URL, init?: FetchOptions) => Promise<Response>;
 type ResolveHostname = (hostname: string) => Promise<string[]>;
 
 function cleanName(value: string, fallback = 'sem-nome'): string {
@@ -152,7 +155,7 @@ class SafeHttpClient {
     private readonly timeoutMs = 30_000,
   ) {}
 
-  private async validateUrl(value: string): Promise<URL> {
+  private async validateUrl(value: string): Promise<{ url: URL; address: string }> {
     let url: URL;
     try {
       url = new URL(value);
@@ -162,28 +165,45 @@ class SafeHttpClient {
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
       throw new Error('Apenas URLs HTTP(S) públicas são permitidas');
     }
-    const hostname = url.hostname.toLowerCase();
+    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
     if (hostname === 'localhost' || hostname.endsWith('.localhost')) throw new Error('Endereço privado não permitido');
     const addresses = net.isIP(hostname) ? [hostname] : await this.resolveHostname(hostname);
     if (addresses.length === 0 || addresses.some(isPrivateAddress)) throw new Error('Endereço privado não permitido');
-    return url;
+    return { url, address: addresses[0] };
+  }
+
+  private createDispatcher(address: string): Agent {
+    const family = net.isIPv6(address) ? 6 : 4;
+    const lookup: LookupFunction = (_hostname, options, callback) => {
+      if (options.all) {
+        (callback as (error: NodeJS.ErrnoException | null, addresses: LookupAddress[]) => void)(null, [{ address, family }]);
+      } else {
+        (callback as (error: NodeJS.ErrnoException | null, address: string, family: number) => void)(null, address, family);
+      }
+    };
+    return new Agent({ connect: { lookup } });
   }
 
   async get(urlValue: string, options: { maxBytes: number; accept: string; signal?: AbortSignal }): Promise<{ url: string; contentType: string; body: Buffer }> {
     let current = urlValue;
     for (let redirect = 0; redirect <= MAX_REDIRECTS; redirect++) {
-      const url = await this.validateUrl(current);
+      const { url, address } = await this.validateUrl(current);
       let response: Response | null = null;
+      let dispatcher: Agent | null = null;
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         const timeout = AbortSignal.timeout(this.timeoutMs);
         const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
+        dispatcher = this.createDispatcher(address);
         try {
           response = await this.fetchImpl(url, {
             redirect: 'manual',
             signal,
+            dispatcher,
             headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.7', Accept: options.accept },
           });
         } catch (error) {
+          await dispatcher.close();
+          dispatcher = null;
           if (options.signal?.aborted || attempt === MAX_ATTEMPTS) throw error;
           await delay(250 * (2 ** (attempt - 1)), undefined, { signal: options.signal });
           continue;
@@ -191,37 +211,52 @@ class SafeHttpClient {
         if (![408, 425, 429, 500, 502, 503, 504].includes(response.status) || attempt === MAX_ATTEMPTS) break;
         const retryAfter = Number(response.headers.get('retry-after'));
         await response.body?.cancel();
+        await dispatcher.close();
+        dispatcher = null;
         response = null;
         const waitMs = Number.isFinite(retryAfter) && retryAfter >= 0 ? Math.min(retryAfter * 1_000, 10_000) : 250 * (2 ** (attempt - 1));
         await delay(waitMs, undefined, { signal: options.signal });
       }
-      if (!response) throw new Error('Serviço remoto indisponível');
+      if (!response || !dispatcher) throw new Error('Serviço remoto indisponível');
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get('location');
         if (!location) throw new Error('Redirecionamento remoto inválido');
         await response.body?.cancel();
+        await dispatcher.close();
         current = new URL(location, url).toString();
         continue;
       }
       if (!response.ok) {
         await response.body?.cancel();
+        await dispatcher.close();
         throw new Error(`Serviço remoto respondeu com HTTP ${response.status}`);
       }
       const length = Number(response.headers.get('content-length') ?? 0);
-      if (length > options.maxBytes) throw new Error('Resposta remota excede o limite permitido');
-      if (!response.body) return { url: response.url || url.toString(), contentType: response.headers.get('content-type') ?? '', body: Buffer.alloc(0) };
+      if (length > options.maxBytes) {
+        await response.body?.cancel();
+        await dispatcher.close();
+        throw new Error('Resposta remota excede o limite permitido');
+      }
+      if (!response.body) {
+        await dispatcher.close();
+        return { url: response.url || url.toString(), contentType: response.headers.get('content-type') ?? '', body: Buffer.alloc(0) };
+      }
       const reader = response.body.getReader();
       const chunks: Buffer[] = [];
       let total = 0;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        total += value.byteLength;
-        if (total > options.maxBytes) {
-          await reader.cancel();
-          throw new Error('Resposta remota excede o limite permitido');
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          total += value.byteLength;
+          if (total > options.maxBytes) {
+            await reader.cancel();
+            throw new Error('Resposta remota excede o limite permitido');
+          }
+          chunks.push(Buffer.from(value));
         }
-        chunks.push(Buffer.from(value));
+      } finally {
+        await dispatcher.close();
       }
       return { url: response.url || url.toString(), contentType: response.headers.get('content-type') ?? '', body: Buffer.concat(chunks) };
     }
@@ -368,7 +403,7 @@ export class MangaScraperService implements ScraperService {
   private readonly http: SafeHttpClient;
 
   constructor(options: { fetchImpl?: FetchLike; resolveHostname?: ResolveHostname; timeoutMs?: number } = {}) {
-    this.http = new SafeHttpClient(options.fetchImpl ?? fetch, options.resolveHostname ?? defaultResolveHostname, options.timeoutMs);
+    this.http = new SafeHttpClient(options.fetchImpl ?? (undiciFetch as unknown as FetchLike), options.resolveHostname ?? defaultResolveHostname, options.timeoutMs);
   }
 
   async searchManga(filters: SearchFilters, signal?: AbortSignal) {

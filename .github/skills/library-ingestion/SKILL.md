@@ -1,6 +1,6 @@
 ---
 name: library-ingestion
-description: Modify Manga Reader filesystem scanning, CBZ/CBR/PDF parsing, image folders, covers, page extraction, and reconciliation without risking source files or database integrity.
+description: Modify Chernobyl Vault filesystem scanning, CBZ/CBR/PDF parsing, image folders, covers, page extraction, and reconciliation without risking source files or database integrity.
 argument-hint: "[scanner, parser, or format change]"
 ---
 

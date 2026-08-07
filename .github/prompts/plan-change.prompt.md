@@ -1,6 +1,6 @@
 ---
 name: plan-change
-description: Inspect Manga Reader and create a risk-aware implementation plan.
+description: Inspect Chernobyl Vault and create a risk-aware implementation plan.
 agent: solution-architect
 tools: ["read", "search"]
 ---

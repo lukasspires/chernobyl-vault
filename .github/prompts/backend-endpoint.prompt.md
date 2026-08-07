@@ -1,6 +1,6 @@
 ---
 name: backend-endpoint
-description: Implement or modify a Manga Reader Fastify endpoint with validation, SQLite safety, and tests.
+description: Implement or modify a Chernobyl Vault Fastify endpoint with validation, SQLite safety, and tests.
 agent: backend-fastify
 ---
 

@@ -39,4 +39,4 @@ jobs:
         working-directory: frontend
         run: npm run build
       - name: Build container
-        run: docker build -t manga-reader:ci .
+        run: docker build -t chernobyl-vault:ci .

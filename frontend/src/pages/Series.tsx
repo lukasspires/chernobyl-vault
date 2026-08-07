@@ -78,7 +78,7 @@ export function SeriesPage() {
   }
 
   if (!series) {
-    return <p>Série não encontrada. <Link to="/" className="text-violet-600">Voltar</Link></p>;
+    return <p>Série não encontrada. <Link to="/" className="text-amber-700 dark:text-amber-400">Voltar</Link></p>;
   }
 
   const continueChapter = series.chapters.find((c) => c.progress_page != null && c.progress_page < c.page_count - 1)
@@ -116,7 +116,7 @@ export function SeriesPage() {
             <button
               type="button"
               onClick={() => navigate(`/read/${continueChapter.id}`)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-zinc-950 hover:bg-amber-400"
             >
               <Play className="w-4 h-4" />
               Continuar — {continueChapter.title} (p. {(continueChapter.progress_page ?? 0) + 1})
@@ -188,7 +188,7 @@ export function SeriesPage() {
                 <span className="font-medium">{ch.title}</span>
                 <span className="text-sm text-zinc-500 ml-2">{ch.page_count} págs · {ch.format.toUpperCase()}</span>
                 {ch.progress_page != null ? (
-                  <span className="text-sm text-violet-600 ml-2">Página {ch.progress_page + 1}</span>
+                  <span className="text-sm text-amber-700 dark:text-amber-400 ml-2">Página {ch.progress_page + 1}</span>
                 ) : null}
               </button>
               <div className="flex gap-2">

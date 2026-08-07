@@ -28,7 +28,9 @@ function loadDotEnv() {
 loadDotEnv();
 
 export const DATA_DIR = process.env.DATA_DIR ?? path.join(rootDir, 'data');
-export const DB_PATH = path.join(DATA_DIR, 'manga-reader.db');
+export const DB_FILENAME = 'chernobyl-vault.db';
+export const LEGACY_DB_FILENAME = 'manga-reader.db';
+export const DB_PATH = path.join(DATA_DIR, DB_FILENAME);
 export const CACHE_DIR = path.join(DATA_DIR, 'cache');
 export const COVERS_DIR = path.join(DATA_DIR, 'cache', 'covers');
 export const PAGES_CACHE_DIR = path.join(DATA_DIR, 'cache', 'pages');

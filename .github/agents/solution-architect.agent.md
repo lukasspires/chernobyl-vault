@@ -1,6 +1,6 @@
 ---
 name: solution-architect
-description: Plans Manga Reader changes across React, Fastify, SQLite, filesystem ingestion, and Docker without editing files.
+description: Plans Chernobyl Vault changes across React, Fastify, SQLite, filesystem ingestion, and Docker without editing files.
 tools: ["read", "search"]
 ---
 
