@@ -1,5 +1,5 @@
 services:
-  manga-reader:
+  chernobyl-vault:
     build:
       context: .
       dockerfile: Dockerfile

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Chernobyl Vault</title>
+  <desc id="desc">Porta de cofre circular dividida em painéis âmbar.</desc>
+  <circle cx="32" cy="32" r="29" fill="#18181b" stroke="#f59e0b" stroke-width="3"/>
+  <circle cx="32" cy="32" r="22" fill="#09090b" stroke="#52525b" stroke-width="2"/>
+  <path d="M30 12h4l3.7 14.2-5.7 3.3-5.7-3.3L30 12Z" fill="#f59e0b"/>
+  <path d="m49.3 42-2 3.5-14.1-4-0.1-6.6 5.7-3.3L49.3 42Z" fill="#f59e0b"/>
+  <path d="m14.7 42 10.5-10.4 5.7 3.3-0.1 6.6-14.1 4-2-3.5Z" fill="#f59e0b"/>
+  <circle cx="32" cy="32" r="5.5" fill="#27272a" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="32" cy="32" r="1.7" fill="#fbbf24"/>
+</svg>

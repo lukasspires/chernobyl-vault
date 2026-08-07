@@ -52,7 +52,7 @@ export function Library() {
           type="button"
           onClick={() => scanMutation.mutate()}
           disabled={scanMutation.isPending}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-zinc-950 hover:bg-amber-400 disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${scanMutation.isPending ? 'animate-spin' : ''}`} />
           {scanMutation.isPending ? 'Escaneando...' : 'Reescanear'}
@@ -111,7 +111,7 @@ export function Library() {
       ) : series.length === 0 ? (
         <div className="text-center py-16 text-zinc-500">
           <p className="mb-4">Nenhuma série encontrada.</p>
-          <Link to="/settings" className="text-violet-600 hover:underline">Configure os caminhos da biblioteca</Link>
+          <Link to="/settings" className="text-amber-700 dark:text-amber-400 hover:underline">Configure os caminhos da biblioteca</Link>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">

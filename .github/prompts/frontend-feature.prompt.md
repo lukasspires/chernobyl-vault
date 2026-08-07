@@ -1,6 +1,6 @@
 ---
 name: frontend-feature
-description: Implement a complete Manga Reader React feature using current UI and state patterns.
+description: Implement a complete Chernobyl Vault React feature using current UI and state patterns.
 agent: frontend-react
 ---
 

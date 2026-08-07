@@ -1,4 +1,4 @@
-# Manga Reader review checklist
+# Chernobyl Vault review checklist
 
 - Backend: `npm test`, `npm run build`, and `dist/db/schema.sql`
 - Frontend: `npm test` and `npm run build`

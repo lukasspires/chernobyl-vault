@@ -112,7 +112,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
   return (
     <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/90 text-white text-sm">
-        <button type="button" onClick={onClose} className="hover:text-violet-400">← Voltar</button>
+        <button type="button" onClick={onClose} className="hover:text-amber-400">← Voltar</button>
         <span>Página {page + 1} / {pageCount}</span>
         <div className="flex items-center gap-2">
           {(['fit-width', 'fit-height', 'original'] as FitMode[]).map((mode) => (
@@ -120,7 +120,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
               key={mode}
               type="button"
               onClick={() => setFitMode(mode)}
-              className={`px-2 py-1 rounded text-xs ${fitMode === mode ? 'bg-violet-600' : 'bg-zinc-800'}`}
+              className={`px-2 py-1 rounded text-xs ${fitMode === mode ? 'bg-amber-500 text-zinc-950' : 'bg-zinc-800'}`}
             >
               {mode === 'fit-width' ? 'Largura' : mode === 'fit-height' ? 'Altura' : 'Original'}
             </button>
@@ -163,7 +163,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
                   <p>Não foi possível carregar a página {index + 1}.</p>
                   <button
                     type="button"
-                    className="rounded bg-violet-600 px-4 py-2"
+                    className="rounded bg-amber-500 text-zinc-950 px-4 py-2"
                     onClick={() => setVerticalPageErrors((current) => {
                       const nextErrors = new Set(current);
                       nextErrors.delete(index);
@@ -191,7 +191,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
         ) : pageError ? (
           <div role="alert" className="text-center text-white">
             <p>Não foi possível carregar esta página.</p>
-            <button type="button" onClick={(event) => { event.stopPropagation(); setPageError(false); }} className="mt-3 rounded bg-violet-600 px-4 py-2">
+            <button type="button" onClick={(event) => { event.stopPropagation(); setPageError(false); }} className="mt-3 rounded bg-amber-500 text-zinc-950 px-4 py-2">
               Tentar novamente
             </button>
           </div>
@@ -218,7 +218,7 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
       </div>
 
       <div className="h-1.5 bg-zinc-800">
-        <div className="h-full bg-violet-600 transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-amber-500 transition-all" style={{ width: `${progress}%` }} />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Performs a read-only Manga Reader review focused on correctness, data safety, filesystem security, compatibility, and missing tests.
+description: Performs a read-only Chernobyl Vault review focused on correctness, data safety, filesystem security, compatibility, and missing tests.
 tools: ["read", "search", "execute"]
 ---
 

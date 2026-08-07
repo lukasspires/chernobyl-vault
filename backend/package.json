@@ -1,5 +1,5 @@
 {
-  "name": "manga-reader-backend",
+  "name": "chernobyl-vault-backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -7,11 +7,11 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && node scripts/copy-assets.mjs",
     "start": "node dist/index.js",
-    "test": "node --import tsx --test test/app.test.ts test/scanner.test.ts test/scraper.test.ts",
+    "test": "node --import tsx --test test/app.test.ts test/db-migration.test.ts test/scanner.test.ts test/scraper.test.ts",
     "debug:scan": "tsx scripts/scan-debug.ts"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.19.0"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
@@ -23,7 +23,8 @@
     "fastify": "^5.2.1",
     "node-unrar-js": "^2.0.2",
     "pdfjs-dist": "^4.10.38",
-    "sharp": "0.35.3"
+    "sharp": "0.35.3",
+    "undici": "8.10.0"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",

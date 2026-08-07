@@ -1,10 +1,10 @@
 ---
 name: fastify-api
-description: Implement stable Manga Reader Fastify and SQLite APIs with validation, bounded access, error mapping, frontend contract alignment, and Node tests.
+description: Implement stable Chernobyl Vault Fastify and SQLite APIs with validation, bounded access, error mapping, frontend contract alignment, and Node tests.
 argument-hint: "[endpoint or backend behavior]"
 ---
 
-# Manga Reader Fastify API
+# Chernobyl Vault Fastify API
 
 1. Inspect the route, service, schema, frontend API types, tests, and deployment behavior.
 2. Define request, response, status, and error contracts.

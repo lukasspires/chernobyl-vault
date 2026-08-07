@@ -126,7 +126,7 @@ export function SettingsPage() {
         type="button"
         onClick={() => saveMutation.mutate()}
         disabled={saveMutation.isPending}
-        className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50"
+        className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-amber-500 text-zinc-950 hover:bg-amber-400 disabled:opacity-50"
       >
         <Save className="w-4 h-4" />
         {saved ? 'Salvo!' : saveMutation.isPending ? 'Salvando...' : 'Salvar configurações'}

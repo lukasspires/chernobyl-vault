@@ -1,0 +1,40 @@
+name: Relatar um bug
+description: Informe um problema reproduzível no Chernobyl Vault.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Não inclua caminhos pessoais, chaves, bancos ou conteúdo da sua biblioteca.
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que aconteceu e o que você esperava?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      placeholder: Liste passos mínimos usando dados sintéticos.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão ou commit
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Ambiente
+      options: [Docker, Desenvolvimento local, Outro]
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs sanitizados
+      render: shell

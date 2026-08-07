@@ -29,7 +29,7 @@ export function Reader() {
     return (
       <div className="fixed inset-0 bg-black flex flex-col gap-4 items-center justify-center text-white">
         <p>{!validId ? 'Capítulo inválido.' : loadError}</p>
-        <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded bg-violet-600">Voltar</button>
+        <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded bg-amber-500 text-zinc-950">Voltar</button>
       </div>
     );
   }
@@ -42,7 +42,7 @@ export function Reader() {
     return (
       <div className="fixed inset-0 bg-black flex flex-col gap-4 items-center justify-center text-white">
         <p>Este capítulo não possui páginas disponíveis.</p>
-        <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded bg-violet-600">Voltar</button>
+        <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded bg-amber-500 text-zinc-950">Voltar</button>
       </div>
     );
   }

@@ -1,10 +1,10 @@
 ---
 name: quality-gate
-description: Validate Manga Reader changes before merge across React, Fastify, SQLite, filesystem ingestion, tests, builds, and Docker.
+description: Validate Chernobyl Vault changes before merge across React, Fastify, SQLite, filesystem ingestion, tests, builds, and Docker.
 argument-hint: "[diff, branch, or feature]"
 ---
 
-# Manga Reader quality gate
+# Chernobyl Vault quality gate
 
 1. Inspect the diff and identify affected UI, API, database, filesystem, cache, and deployment contracts.
 2. Run only relevant repository-supported checks while iterating; for cross-stack work, match CI.

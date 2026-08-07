@@ -1,6 +1,6 @@
 ---
 name: library-ingestion
-description: Safely changes Manga Reader scanning, archive parsing, page extraction, covers, and library reconciliation.
+description: Safely changes Chernobyl Vault scanning, archive parsing, page extraction, covers, and library reconciliation.
 tools: ["read", "search", "edit", "execute"]
 ---
 

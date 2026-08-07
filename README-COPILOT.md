@@ -1,6 +1,6 @@
-# GitHub Copilot configuration for Manga Reader
+# GitHub Copilot configuration for Chernobyl Vault
 
-This repository contains project-specific Copilot customizations for the Manga Reader stack. The configuration is intentionally limited to React, Fastify, SQLite, filesystem ingestion, and the container deployment used here.
+This repository contains project-specific Copilot customizations for the Chernobyl Vault stack. The configuration is intentionally limited to React, Fastify, SQLite, filesystem ingestion, and the container deployment used here.
 
 ## Structure
 
@@ -45,7 +45,7 @@ Run the smallest relevant checks while iterating. Before merging a cross-stack c
 ```bash
 cd backend && npm ci && npm test && npm run build
 cd frontend && npm ci && npm test && npm run build
-docker build -t manga-reader:local .
+docker build -t chernobyl-vault:local .
 ```
 
 Also confirm that `backend/dist/db/schema.sql` exists after the backend build. Use `docker compose config --quiet` when changing Compose or environment configuration.

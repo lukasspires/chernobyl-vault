@@ -10,7 +10,7 @@ export interface TestDatabase {
 }
 
 export function createTestDatabase(libraryPath?: string): TestDatabase {
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'manga-reader-test-'));
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chernobyl-vault-test-'));
   const db = initDb({ dataDir, dbPath: path.join(dataDir, 'test.db'), libraryPath });
   return {
     db,

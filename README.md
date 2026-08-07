@@ -1,122 +1,115 @@
-# Manga Reader
+<p align="center">
+  <img src="frontend/public/brand-mark.svg" width="112" alt="Símbolo do Chernobyl Vault" />
+</p>
 
-Aplicação web privada para leitura de quadrinhos e mangás. Escaneia pastas locais ou de servidor, organiza a biblioteca e oferece um leitor fluido com progresso persistente.
+<h1 align="center">Chernobyl Vault</h1>
+
+<p align="center"><strong>Seu acervo de histórias na Zona de Exclusão.</strong></p>
+
+<p align="center">
+  <a href="https://github.com/lukasspires/chernobyl-vault/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lukasspires/chernobyl-vault/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="LICENSE"><img alt="Licença AGPL-3.0" src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-f59e0b" /></a>
+  <img alt="Node 22+" src="https://img.shields.io/badge/Node.js-22%2B-18181b" />
+</p>
+
+Biblioteca web self-hosted para organizar e ler mangás, webtoons, comics e HQs. O Chernobyl Vault indexa arquivos locais, preserva o progresso de leitura e pode importar capítulos de fontes remotas compatíveis.
+
+![Prévia da identidade do Chernobyl Vault](frontend/public/social-preview.png)
+
+> [!WARNING]
+> O aplicativo não possui autenticação. Use-o apenas em uma rede local confiável ou por VPN, como Tailscale ou WireGuard. Não exponha a porta diretamente à internet pública.
 
 ## Funcionalidades
 
-- Biblioteca com scan de CBZ, CBR, PDF e pastas de imagens
-- Leitor fullscreen com zoom, modos de exibição e navegação por teclado/toque
-- Progresso de leitura e histórico
-- Favoritos, tags e busca
-- Metadados via MyAnimeList e ComicVine (opcional)
-- Catálogo MangaDex com filtros, seleção de idiomas e download de capítulos
-- Importação por URL de leitores HTML/WordPress/Madara compatíveis
-- Downloads retomáveis, modo de economia de dados e importação automática na biblioteca
-- Modo escuro e direção de leitura LTR/RTL
+- Biblioteca de CBZ, ZIP, CBR, RAR, PDF e pastas de imagens
+- Leitura LTR, RTL e vertical contínua, com zoom, fullscreen, teclado e toque
+- Progresso, histórico, favoritos, tags e busca
+- Metadados opcionais via MyAnimeList e ComicVine
+- Catálogo MangaDex com filtros, idiomas e economia de dados
+- Importação por URL de leitores HTML, WordPress e Madara compatíveis
+- Downloads retomáveis e importação automática na biblioteca
+- Interface responsiva com temas claro e escuro
 
-## Privacidade
+## Início rápido com Docker
 
-Esta aplicação **não possui autenticação**. Proteja o acesso mantendo-a apenas na rede local ou via VPN (Tailscale, WireGuard). Não exponha diretamente à internet pública.
-
-## Requisitos
-
-- Node.js 22+ (desenvolvimento)
-- Docker e Docker Compose (produção)
-
-## Desenvolvimento local
-
-```bash
-# Backend
-cd backend
-npm install
-npm run dev
-
-# Frontend (outro terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-Acesse http://localhost:3000 — o frontend faz proxy da API para http://localhost:3001.
-
-## Docker (recomendado)
-
-1. Copie `.env.example` para `.env` e ajuste o caminho da biblioteca:
+Requisitos: Docker e Docker Compose.
 
 ```bash
 cp .env.example .env
-```
-
-2. Edite `.env`:
-
-```env
-LIBRARY_PATH=C:\Mangas
-# ou no Linux: LIBRARY_PATH=/mnt/nas/comics
-```
-
-3. Inicie:
-
-```bash
 docker compose up -d --build
 ```
 
-Acesse http://localhost:3000
+Configure a biblioteca no `.env`:
 
-## Primeiro uso
+```env
+# Windows
+LIBRARY_PATH=C:\Mangas
 
-1. Abra **Configurações** e adicione os caminhos da biblioteca
-2. Na **Biblioteca**, clique em **Reescanear**
-3. Clique em uma série para ver capítulos e começar a ler
-
-Para obter capítulos remotos, abra **Explorar**, pesquise no catálogo ou cole a URL de um leitor HTML compatível. Os arquivos são gravados em `data/downloads` e aparecem automaticamente na biblioteca ao final de cada capítulo.
-
-Use somente conteúdo que você tem autorização para baixar. O aplicativo não contorna login, CAPTCHA, paywall ou DRM.
-
-## Estrutura de pastas recomendada
-
+# Linux
+LIBRARY_PATH=/mnt/nas/comics
 ```
+
+Acesse <http://localhost:3000>, abra **Configurações**, confirme os caminhos e selecione **Reescanear** na Biblioteca.
+
+Os volumes do Compose mantêm os dados em `./data` e montam a biblioteca como somente leitura em `/library`.
+
+## Desenvolvimento
+
+Requisitos: Node.js 22.19 ou superior e npm.
+
+```bash
+# terminal 1
+cd backend
+npm ci
+npm run dev
+
+# terminal 2
+cd frontend
+npm ci
+npm run dev
+```
+
+O frontend fica em <http://localhost:3000> e encaminha `/api` para o backend em <http://localhost:3001>.
+
+### Verificação completa
+
+```bash
+cd backend && npm test && npm run build
+cd ../frontend && npm test && npm run build
+cd .. && docker compose config --quiet
+docker build -t chernobyl-vault:local .
+```
+
+## Compatibilidade com instalações anteriores
+
+Na primeira inicialização, o banco legado `data/manga-reader.db` é migrado para `data/chernobyl-vault.db`. Preferências salvas no navegador sob `manga-reader-settings` também são transferidas automaticamente. A migração nunca substitui um banco ou configuração que já exista com o nome novo.
+
+## Organização da biblioteca
+
+```text
 Biblioteca/
 ├── One Piece/
 │   ├── 001.cbz
-│   ├── 002.cbz
-│   └── ...
+│   └── 002.cbz
 ├── Berserk/
 │   └── Vol 01/
 │       ├── 001.png
-│       └── ...
+│       └── 002.png
 └── Spider-Man 001.cbr
 ```
 
-Séries são agrupadas pela pasta de primeiro nível. Arquivos soltos na raiz viram séries individuais.
+Séries são agrupadas pela pasta de primeiro nível. Arquivos soltos na raiz são tratados como séries individuais.
 
-## Metadados (opcional)
+## Uso responsável
 
-- **MyAnimeList**: crie um app em https://myanimelist.net/apiconfig e configure o Client ID
-- **ComicVine**: obtenha uma API key em https://comicvine.gamespot.com/api/
+Baixe ou importe somente conteúdo que você tem autorização para usar. O Chernobyl Vault não contorna login, CAPTCHA, paywall ou DRM e não inclui obras protegidas no repositório.
 
-## Deploy em servidor (NAS/VPS)
+## Segurança e contribuições
 
-Monte volumes no `docker-compose.yml`:
-
-```yaml
-volumes:
-  - ./data:/app/data
-  - /caminho/para/mangas:/library:ro
-```
-
-Configure os caminhos em Settings como `/library/NomeDaSerie`.
-
-Para acesso remoto, use VPN — não abra a porta publicamente sem autenticação adicional.
-
-## Formatos suportados
-
-| Formato | Extensão |
-|---------|----------|
-| Comic Book ZIP | .cbz |
-| Comic Book RAR | .cbr |
-| PDF | .pdf |
-| Pasta de imagens | .jpg, .png, .webp, .gif |
+- Leia [SECURITY.md](SECURITY.md) antes de relatar uma vulnerabilidade.
+- Consulte [CONTRIBUTING.md](CONTRIBUTING.md) para preparar mudanças.
+- A participação segue o [Código de Conduta](CODE_OF_CONDUCT.md).
 
 ## Licença
 
-Uso pessoal.
+Distribuído sob a [GNU Affero General Public License v3.0](LICENSE). Modificações disponibilizadas por uma rede também devem oferecer o código-fonte correspondente aos usuários.

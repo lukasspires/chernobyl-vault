@@ -32,7 +32,7 @@ export function ComicCard({ series }: Props) {
           </span>
         ) : null}
         {hasProgress ? (
-          <span className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-violet-600 text-white text-xs font-medium">
+          <span className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500 text-zinc-950 text-xs font-medium">
             <Play className="w-3 h-3" /> Continuar
           </span>
         ) : null}
@@ -41,7 +41,7 @@ export function ComicCard({ series }: Props) {
         </span>
       </div>
       <div className="p-3">
-        <h3 className="font-medium truncate group-hover:text-violet-600 dark:group-hover:text-violet-400">
+        <h3 className="font-medium truncate group-hover:text-amber-700 dark:group-hover:text-amber-400">
           {series.title}
         </h3>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">

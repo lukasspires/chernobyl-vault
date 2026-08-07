@@ -3,11 +3,21 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 body {
-  @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 min-h-screen;
+  @apply min-h-screen bg-stone-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+  background-image: radial-gradient(circle at top, rgb(245 158 11 / 0.07), transparent 30rem);
+}
+
+::selection {
+  @apply bg-amber-300 text-zinc-950;
+}
+
+:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 3px;
 }
 
 .card-hover {
-  @apply transition-transform hover:scale-[1.02] hover:shadow-lg;
+  @apply transition-transform hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-950/10;
 }
 
 .skeleton {
