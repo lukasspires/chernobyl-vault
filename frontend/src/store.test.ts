@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEGACY_SETTINGS_STORAGE_KEY, migrateLegacySettings, SETTINGS_STORAGE_KEY } from './store';
+import { LEGACY_SETTINGS_STORAGE_KEY, migrateLegacySettings, SETTINGS_STORAGE_KEY, useAppStore } from './store';
 
 class MemoryStorage {
   readonly values = new Map<string, string>();
@@ -22,6 +22,10 @@ class MemoryStorage {
 const legacyValue = JSON.stringify({ state: { theme: 'dark', fitMode: 'fit-width', readingDirection: 'rtl' }, version: 0 });
 
 describe('settings storage migration', () => {
+  it('uses continuous vertical reading by default', () => {
+    expect(useAppStore.getInitialState().readingDirection).toBe('vertical');
+  });
+
   it('moves valid legacy settings to the new key', () => {
     const storage = new MemoryStorage();
     storage.values.set(LEGACY_SETTINGS_STORAGE_KEY, legacyValue);

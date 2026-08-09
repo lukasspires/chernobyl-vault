@@ -15,14 +15,24 @@ export function Reader() {
     queryKey: ['chapter', id],
     queryFn: async () => {
       try {
-        return { chapter: await api.getChapter(id), error: null };
+        const chapter = await api.getChapter(id);
+        const series = await api.getSeries(chapter.series_id);
+        const chapterIndex = series.chapters.findIndex((item) => item.id === chapter.id);
+        return {
+          chapter,
+          previousChapter: chapterIndex > 0 ? series.chapters[chapterIndex - 1] : null,
+          nextChapter: chapterIndex >= 0 && chapterIndex < series.chapters.length - 1 ? series.chapters[chapterIndex + 1] : null,
+          error: null,
+        };
       } catch (error) {
-        return { chapter: null, error: error instanceof Error ? error.message : 'Não foi possível carregar o capítulo.' };
+        return { chapter: null, previousChapter: null, nextChapter: null, error: error instanceof Error ? error.message : 'Não foi possível carregar o capítulo.' };
       }
     },
     enabled: validId,
   });
   const chapter = loadResult?.chapter;
+  const previousChapter = loadResult?.previousChapter;
+  const nextChapter = loadResult?.nextChapter;
   const loadError = loadResult?.error;
 
   if (!validId || loadError) {
@@ -50,9 +60,14 @@ export function Reader() {
   return (
     <>
       <PageViewer
+        key={chapter.id}
         chapterId={chapter.id}
+        chapterTitle={chapter.title}
         pageCount={chapter.page_count}
         initialPage={Math.min(chapter.progress_page ?? 0, chapter.page_count - 1)}
+        previousChapter={previousChapter}
+        nextChapter={nextChapter}
+        onChapterChange={(nextChapterId) => navigate(`/read/${nextChapterId}`)}
         onPageChange={(page) => {
           setSaveError(false);
           api.saveProgress(chapter.id, page).catch(() => setSaveError(true));

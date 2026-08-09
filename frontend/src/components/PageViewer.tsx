@@ -5,13 +5,17 @@ import { useAppStore, type FitMode } from '../store';
 
 interface Props {
   chapterId: number;
+  chapterTitle?: string;
   pageCount: number;
   initialPage?: number;
+  previousChapter?: { id: number; title: string } | null;
+  nextChapter?: { id: number; title: string } | null;
+  onChapterChange?: (chapterId: number) => void;
   onPageChange?: (page: number) => void;
   onClose?: () => void;
 }
 
-export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange, onClose }: Props) {
+export function PageViewer({ chapterId, chapterTitle, pageCount, initialPage = 0, previousChapter, nextChapter, onChapterChange, onPageChange, onClose }: Props) {
   const [page, setPage] = useState(initialPage);
   const [zoom, setZoom] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
@@ -111,9 +115,13 @@ export function PageViewer({ chapterId, pageCount, initialPage = 0, onPageChange
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex flex-col">
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/90 text-white text-sm">
-        <button type="button" onClick={onClose} className="hover:text-amber-400">← Voltar</button>
-        <span>Página {page + 1} / {pageCount}</span>
+      <div className="flex items-center justify-between gap-3 px-4 py-2 bg-zinc-900/90 text-white text-sm">
+        <button type="button" onClick={onClose} className="shrink-0 hover:text-amber-400">← Voltar</button>
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+          <button type="button" disabled={!previousChapter} onClick={() => previousChapter && onChapterChange?.(previousChapter.id)} aria-label={previousChapter ? `Capítulo anterior: ${previousChapter.title}` : 'Sem capítulo anterior'} className="inline-flex shrink-0 items-center gap-1 rounded bg-zinc-800 px-2 py-1 hover:bg-zinc-700 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft className="h-4 w-4" /><span className="hidden sm:inline">Anterior</span></button>
+          <div className="min-w-0 text-center"><span className="block truncate text-xs font-medium sm:text-sm">{chapterTitle ?? `Capítulo ${chapterId}`}</span><span className="block text-[10px] text-zinc-400">Página {page + 1} / {pageCount}</span></div>
+          <button type="button" disabled={!nextChapter} onClick={() => nextChapter && onChapterChange?.(nextChapter.id)} aria-label={nextChapter ? `Próximo capítulo: ${nextChapter.title}` : 'Sem próximo capítulo'} className="inline-flex shrink-0 items-center gap-1 rounded bg-zinc-800 px-2 py-1 hover:bg-zinc-700 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-35"><span className="hidden sm:inline">Próximo</span><ChevronRight className="h-4 w-4" /></button>
+        </div>
         <div className="flex items-center gap-2">
           {(['fit-width', 'fit-height', 'original'] as FitMode[]).map((mode) => (
             <button

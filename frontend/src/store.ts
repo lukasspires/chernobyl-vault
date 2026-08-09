@@ -44,7 +44,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       theme: 'system',
       fitMode: 'fit-width',
-      readingDirection: 'ltr',
+      readingDirection: 'vertical',
       setTheme: (theme) => set({ theme }),
       setFitMode: (fitMode) => set({ fitMode }),
       setReadingDirection: (readingDirection) => set({ readingDirection }),

@@ -7,7 +7,7 @@ import { renderWithProviders } from '../test/render';
 const manga = {
   source: 'mangadex', sourceId: '11111111-1111-4111-8111-111111111111', sourceUrl: 'https://mangadex.org/title/test',
   title: 'Manga Remoto', description: 'Descrição', altTitles: [], authors: ['Autora'], artists: [], tags: [], year: 2025,
-  status: 'ongoing', demographic: 'shounen', contentRating: 'safe', originalLanguage: 'ja', availableLanguages: ['pt-br'],
+  status: 'ongoing', demographic: 'shounen', contentRating: 'safe', originalLanguage: 'ja', availableLanguages: ['pt-br', 'en'],
   coverUrl: null, thumbnailUrl: null,
 };
 const chapter = {
@@ -33,11 +33,19 @@ describe('ExplorePage', () => {
     renderWithProviders(<ExplorePage />);
 
     await user.click(await screen.findByRole('button', { name: /Manga Remoto/ }));
+    expect(screen.getByLabelText(/Português \(Brasil\).*pt-br/i)).toBeChecked();
+    expect(screen.getByLabelText(/Inglês.*en/i)).not.toBeChecked();
+    expect(screen.queryByText('🌐')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Economia de dados')).toBeChecked();
+    await user.click(screen.getByLabelText(/Inglês.*en/i));
+    expect(screen.getByText('2 selecionado(s)')).toBeInTheDocument();
     await user.click(await screen.findByLabelText(/Capítulo 1/));
     await user.click(screen.getByRole('button', { name: /Baixar e adicionar/ }));
 
     await waitFor(() => expect(requests.some((request) => request.url === '/api/scraper/downloads' && request.init?.method === 'POST')).toBe(true));
     const started = requests.find((request) => request.url === '/api/scraper/downloads' && request.init?.method === 'POST');
-    expect(JSON.parse(String(started?.init?.body)).chapters).toHaveLength(1);
+    const body = JSON.parse(String(started?.init?.body));
+    expect(body.chapters).toHaveLength(1);
+    expect(body.dataSaver).toBe(true);
   });
 });

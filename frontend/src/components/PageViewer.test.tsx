@@ -36,4 +36,23 @@ describe('PageViewer navigation', () => {
     expect(screen.queryByRole('button', { name: 'Página à esquerda' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Página à direita' })).not.toBeInTheDocument();
   });
+
+  it('navigates between adjacent chapters and disables missing boundaries', () => {
+    const onChapterChange = vi.fn();
+    render(
+      <PageViewer
+        chapterId={2}
+        chapterTitle="Capítulo 2"
+        pageCount={3}
+        previousChapter={{ id: 1, title: 'Capítulo 1' }}
+        nextChapter={null}
+        onChapterChange={onChapterChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capítulo anterior: Capítulo 1' }));
+    expect(onChapterChange).toHaveBeenCalledWith(1);
+    expect(screen.getByRole('button', { name: 'Sem próximo capítulo' })).toBeDisabled();
+    expect(screen.getByText('Capítulo 2')).toBeInTheDocument();
+  });
 });
