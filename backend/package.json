@@ -24,7 +24,7 @@
     "node-unrar-js": "^2.0.2",
     "pdfjs-dist": "^4.10.38",
     "sharp": "0.35.3",
-    "undici": "8.10.0"
+    "undici": "8.10.2"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
